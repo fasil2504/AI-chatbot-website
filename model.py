@@ -2,7 +2,7 @@ from sentence_transformers import SentenceTransformer
 import faiss
 import numpy as np
 from util import chunk_text
-from google import genai
+import google.generativeai as genai
 import os
 
 # Load embedding model once
@@ -10,7 +10,7 @@ model = SentenceTransformer("all-MiniLM-L6-v2")
 
 
 # Configure Gemini API
-client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 
 def build_faiss_index(text):
@@ -42,9 +42,7 @@ Answer the question using ONLY the following content:
 
 Question: {question}
 """
-    response = client.models.generate_content(
-        model="gemini-2.5-flash-lite",
-        contents=prompt,
-    )
-    return response.text 
+    model = genai.GenerativeModel("gemini-2.5-flash-lite")
+    response = model.generate_content(prompt)
+    return response.text
 
