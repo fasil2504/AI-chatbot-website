@@ -2,16 +2,17 @@ from sentence_transformers import SentenceTransformer
 import faiss
 import numpy as np
 from util import chunk_text
-from google import genai
+from openai import OpenAI
 import os
 
 # Load embedding model once
 model = SentenceTransformer("all-MiniLM-L6-v2")
 
-
-# Configure Gemini API
-client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
-
+# Load OpenAI client safely
+client = OpenAI(
+    api_key=os.getenv("OPENAI_API_KEY")
+)
+print("API KEY_____________",client.api_key is not None)
 
 def build_faiss_index(text):
     chunks = chunk_text(text)
@@ -42,9 +43,12 @@ Answer the question using ONLY the following content:
 
 Question: {question}
 """
-    response = client.models.generate_content(
-        model="gemini-2.5-flash-lite",
-        contents=prompt,
+
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[{"role": "user", "content": prompt}]
     )
-    return response.text 
+
+    return response.choices[0].message.content
+
 
